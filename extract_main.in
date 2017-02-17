@@ -1,8 +1,0 @@
-go atlas
-# extract device parameters
-extract init inf="pmos_1.log"
-extract name="pvt" (xintercept(maxslope(curve(abs(v."gate"),abs(i."drain")))) - abs(ave(v."drain"))/2.0)
-
-extract name="dydx" max(deriv(v."gate", i."drain")) outfile="dydx.dat"
-
-quit
