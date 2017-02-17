@@ -1,0 +1,108 @@
+go atlas
+.begin
+#
+#     NMOS inverters - DC point simulation
+#     SILVACO International
+#
+#     Circuit description
+#
+vin 1 0 0 
+an 2=drain 1=gate 0=source 0=substrate infile=nmos_0.str width=15.
+ap 2=drain 1=gate 3=source 3=substrate infile=pmos_0.str width=15.
+vcc 3 0 1.8v
+c1 3 0 3ff
+#
+#     End of circuit description
+#
+.model simplen nmos ( tox=0.02e-6 vt0=0.9 )
+.model simplep pmos ( tox=0.02e-6 vt0=0.9 )
+#
+.numeric vchange=1.
+.options print m2ln noshift
+#
+.save outfile=cmos
+.end
+#
+#  Define physical models for ATLAS device   
+#
+contact device=an name=gate n.poly
+contact device=ap name=gate p.poly
+model   device=an  conmob fldmob bgn
+model   device=ap  conmob fldmob bgn
+
+go atlas
+.begin
+#
+#     NMOS inverters - DC curve simulation
+
+#
+#     Circuit description
+#
+vin 1 0 0 
+an 2=drain 1=gate 0=source 0=substrate infile=nmos_0.str width=15.
+ap 2=drain 1=gate 3=source 3=substrate infile=pmos_0.str width=15.
+vcc 3 0 1.8v
+c1 3 0 3ff
+#
+#     End of circuit description
+#
+.model simplen nmos ( tox=0.02e-6 vt0=0.9 )
+.model simplep pmos ( tox=0.02e-6 vt0=0.9 )
+#
+.options print fulln noshift
+#
+.load infile=cmos
+.log outfile=cmosdc
+.dc vin 0. 5. 0.25
+#
+.end
+#
+#  Define physical models for ATLAS device   
+#
+contact device=an name=gate n.poly
+contact device=ap name=gate p.poly
+model   device=an  conmob fldmob bgn
+model   device=ap  conmob fldmob bgn
+
+go atlas
+
+tonyplot  cmosdc_dc_1.log
+quit
+
+go atlas
+.begin
+#
+#     NMOS inverters - transient simulation
+#     
+#     Circuit description
+#
+vin 1 0 0. PULSE 0 5 0 50ps 50ps 1000ps 10 
+an 2=drain 1=gate 0=source 0=substrate infile=mos2ex01_0.str width=15.
+mn 3 2 0 0 simple L=2.0u W=5u 
+r1 2 4 10k
+r2 3 4 10k
+vcc 4 0 5.
+c1 3 0 3ff
+#
+#     End of circuit description
+#
+.model simple nmos ( tox=.02e-6 vt0=0.9 ) 
+#
+.numeric lte=0.05 dtmin=1e-15
+.options print noshift
+#
+.load infile=nmos
+.log outfile=mos2ex01_t
+#
+.tran 0.0001ps 3ns
+#
+.end
+#
+#    ATLAS device models and parameters
+#
+contact device=an name=gate n.poly
+model device=an reg=1 conmob fldmob bgn
+
+go atlas
+tonyplot  mos2ex01_t_tr.log -set  mos2ex01_tr.set
+quit
